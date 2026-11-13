@@ -1,0 +1,79 @@
+{
+  "price_list_version": "PL-2026-Q4",
+  "price_effective_date": "2026-11-01",
+  "products": [
+    {
+      "sku": "SRV-DELL-R750",
+      "name": "Máy chủ Dell PowerEdge R750",
+      "category": "Server",
+      "aliases": ["dell r750", "server r750", "máy chủ dell", "poweredge r750", "server dell"],
+      "unit_price": 125000000,
+      "currency": "VND",
+      "available_stock": 4,
+      "standard_lead_time_days": 3,
+      "backorder_lead_time_days": 21
+    },
+    {
+      "sku": "SW-CISCO-C9200L",
+      "name": "Switch Cisco Catalyst C9200L 24P PoE+",
+      "category": "Network",
+      "aliases": ["cisco c9200", "switch cisco", "c9200l", "switch 24 port", "bộ chuyển mạch cisco"],
+      "unit_price": 28500000,
+      "currency": "VND",
+      "available_stock": 10,
+      "standard_lead_time_days": 2,
+      "backorder_lead_time_days": 14
+    },
+    {
+      "sku": "FW-FORTI-60F",
+      "name": "Thiết bị tường lửa Fortinet FortiGate 60F",
+      "category": "Security",
+      "aliases": ["fortigate 60f", "fortinet 60f", "tường lửa fortinet", "firewall 60f", "tường lửa 60f"],
+      "unit_price": 19800000,
+      "currency": "VND",
+      "available_stock": 0,
+      "standard_lead_time_days": 0,
+      "backorder_lead_time_days": 10
+    },
+    {
+      "sku": "SVC-INSTALL-SRV",
+      "name": "Dịch vụ lắp đặt và cấu hình Server tại chỗ",
+      "category": "Service",
+      "aliases": ["lắp đặt server", "cấu hình server", "cài đặt máy chủ", "triển khai server"],
+      "unit_price": 5000000,
+      "currency": "VND",
+      "available_stock": 999,
+      "standard_lead_time_days": 1,
+      "backorder_lead_time_days": 1
+    },
+    {
+      "sku": "SVC-MAINT-1YR",
+      "name": "Gói bảo trì hệ thống định kỳ 1 năm (24/7)",
+      "category": "Service",
+      "aliases": ["bảo trì 1 năm", "bảo trì hệ thống", "gói bảo trì", "bảo trì định kỳ"],
+      "unit_price": 15000000,
+      "currency": "VND",
+      "available_stock": 999,
+      "standard_lead_time_days": 1,
+      "backorder_lead_time_days": 1
+    }
+  ],
+  "sales_reps": [
+    {"id": "NV01", "name": "Nguyễn Văn An", "email": "an.nv@minhan.vn", "assigned_count": 5},
+    {"id": "NV02", "name": "Trần Thị Bình", "email": "binh.tt@minhan.vn", "assigned_count": 3},
+    {"id": "NV03", "name": "Lê Hoàng Cường", "email": "cuong.lh@minhan.vn", "assigned_count": 4},
+    {"id": "NV04", "name": "Phạm Mai Dung", "email": "dung.pm@minhan.vn", "assigned_count": 6},
+    {"id": "NV05", "name": "Đỗ Minh Đức", "email": "duc.dm@minhan.vn", "assigned_count": 2},
+    {"id": "NV06", "name": "Vũ Hải Yến", "email": "yen.vh@minhan.vn", "assigned_count": 4}
+  ],
+  "discount_policy": {
+    "standard_rep_limit_pct": 8.0,
+    "volume_tiers": [
+      {"min_total_vnd": 0, "max_discount_pct": 5.0},
+      {"min_total_vnd": 100000000, "max_discount_pct": 8.0},
+      {"min_total_vnd": 300000000, "max_discount_pct": 12.0}
+    ],
+    "manager_approval_threshold_pct": 8.0,
+    "manager_name": "Trưởng phòng Kinh doanh"
+  }
+}

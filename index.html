@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minh An Tech — B2B Sales AI Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --emerald-deep: #0b8a5b;
+      --emerald-mid: #16a36c;
+      --emerald-light: #3ed598;
+      --emerald-grad: linear-gradient(135deg, #0d9464 0%, #37cf94 100%);
+      --mint-soft: #d1fae5;
+      --mint-btn: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+      --bg-canvas: linear-gradient(135deg, #2cb978 0%, #179464 48%, #0f765b 100%);
+      --surface-shell: #f6f8fa;
+      --surface-card: #ffffff;
+      --surface-muted: #f8fafc;
+      --border-hairline: #edf1f5;
+      --border-soft: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --amber: #d97706;
+      --amber-bg: #fef3c7;
+      --rose: #e11d48;
+      --rose-bg: #ffe4e6;
+      --blue: #0284c7;
+      --blue-bg: #e0f2fe;
+      --shadow-shell: 0 28px 70px rgba(6, 60, 42, 0.28);
+      --shadow-card: 0 6px 22px rgba(15, 23, 42, 0.04);
+      --shadow-emerald: 0 10px 24px rgba(16, 163, 108, 0.28);
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-canvas);
+      min-height: 100vh;
+      padding: 20px;
+      color: var(--text-primary);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Subtle geometric facets matching reference backdrop */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(115deg, rgba(255,255,255,0.06) 0%, transparent 40%),
+        linear-gradient(245deg, rgba(0,0,0,0.08) 0%, transparent 45%),
+        radial-gradient(circle at 18% 20%, rgba(167,243,208,0.18), transparent 45%);
+      z-index: 0;
+    }
+
+    /* Main Floating App Shell */
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1440px;
+      margin: 0 auto;
+      min-height: calc(100vh - 40px);
+      background: var(--surface-shell);
+      border-radius: 18px;
+      box-shadow: var(--shadow-shell);
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.45);
+    }
+
+    /* Slim Left Icon Rail */
+    .sidebar-rail {
+      background: #ffffff;
+      border-right: 1px solid var(--border-hairline);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0 20px;
+      gap: 6px;
+      user-select: none;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
+      margin-bottom: 14px;
+      cursor: pointer;
+      transition: transform 0.25s var(--ease);
+    }
+    .brand-mark:hover { transform: scale(1.06); }
+
+    .rail-group-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 12px 0 4px;
+      text-transform: uppercase;
+    }
+
+    .rail-btn {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.25s var(--ease);
+    }
+    .rail-btn:hover {
+      background: #f1f5f9;
+      color: var(--emerald-deep);
+      transform: translateY(-1px);
+    }
+    .rail-btn.active {
+      background: var(--emerald-grad);
+      color: #ffffff;
+      box-shadow: var(--shadow-emerald);
+    }
+    .rail-btn svg { width: 19px; height: 19px; stroke-width: 2; }
+
+    .rail-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 99px;
+      background: var(--rose);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 2px #fff;
+      transition: transform 0.2s var(--ease);
+    }
+    .rail-badge.hidden { display: none; }
+
+    /* Tooltip on hover */
+    .rail-btn[data-tip]::after {
+      content: attr(data-tip);
+      position: absolute;
+      left: 54px;
+      background: #0f172a;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-6px);
+      transition: all 0.2s var(--ease);
+      z-index: 40;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+    }
+    .rail-btn[data-tip]:hover::after {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Main Content Area */
+    .main-area {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* Top Header */
+    .topbar {
+      height: 68px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-hairline);
+      padding: 0 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .search-global {
+      position: relative;
+      flex: 1;
+      max-width: 440px;
+    }
+    .search-global svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+    }
+    .search-global input {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid #eef2f6;
+      border-radius: 10px;
+      padding: 9px 14px 9px 38px;
+      font-size: 13px;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s var(--ease);
+    }
+    .search-global input:focus {
+      background: #fff;
+      border-color: var(--emerald-light);
+      box-shadow: 0 0 0 3px rgba(55, 207, 148, 0.16);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pill-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #ecfdf5;
+      color: var(--emerald-deep);
+      border: 1px solid #a7f3d0;
+    }
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    .icon-action {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border-hairline);
+      background: #ffffff;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+    }
+    .icon-action:hover {
+      background: #f1f5f9;
+      color: var(--emerald-deep);
+      transform: translateY(-1px);
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-left: 8px;
+      border-left: 1px solid var(--border-hairline);
+    }
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 10px rgba(234, 88, 12, 0.25);
+    }
+    .user-meta .u-name { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.2; }
+    .user-meta .u-role { font-size: 11px; color: var(--text-muted); }
+
+    /* Workspace Container */
+    .workspace-body {
+      padding: 22px 26px 26px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .page-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .header-kpis {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .mini-kpi {
+      background: #fff;
+      border: 1px solid var(--border-hairline);
+      border-radius: 10px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.02);
+    }
+    .mini-kpi strong { font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    /* Views */
+    .view-panel { display: none; animation: fadeSlideUp 0.35s var(--ease); }
+    .view-panel.active { display: block; }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Reference 3-Column Bento Grid */
+    .bento-3col {
+      display: grid;
+      grid-template-columns: 300px 1fr 310px;
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 1220px) {
+      .bento-3col { grid-template-columns: 280px 1fr; }
+      .right-detail-col { grid-column: span 2; }
+    }
+    @media (max-width: 860px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar-rail { flex-direction: row; padding: 10px 16px; overflow-x: auto; }
+      .rail-group-label { display: none; }
+      .bento-3col { grid-template-columns: 1fr; }
+      .right-detail-col { grid-column: auto; }
+    }
+
+    .card {
+      background: var(--surface-card);
+      border-radius: 16px;
+      border: 1px solid var(--border-hairline);
+      box-shadow: var(--shadow-card);
+      padding: 18px;
+      transition: box-shadow 0.25s var(--ease);
+    }
+    .card-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    /* Buttons */
+    .btn-emerald {
+      background: var(--emerald-grad);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 16px rgba(16, 163, 108, 0.24);
+      transition: all 0.22s var(--ease);
+    }
+    .btn-emerald:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(16, 163, 108, 0.32);
+    }
+    .btn-emerald:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-mint {
+      background: var(--mint-btn);
+      color: #065f46;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.22s var(--ease);
+    }
+    .btn-mint:hover { filter: brightness(0.96); transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: #f8fafc;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-soft);
+      border-radius: 9px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s var(--ease);
+    }
+    .btn-ghost:hover { background: #eef2f6; color: var(--text-primary); }
+
+    .btn-rose {
+      background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+    }
+    .btn-rose:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(225, 29, 72, 0.25); }
+
+    /* Left Column: Search + Wallet-style List Cards */
+    .left-search {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .left-search input {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid #eef2f6;
+      border-radius: 10px;
+      padding: 8px 12px 8px 34px;
+      font-size: 12px;
+      outline: none;
+      transition: all 0.2s var(--ease);
+    }
+    .left-search input:focus { background: #fff; border-color: var(--emerald-light); }
+    .left-search svg {
+      position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+      width: 14px; height: 14px; color: var(--text-muted);
+    }
+
+    .seg-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #f1f5f9;
+      border-radius: 9px;
+      padding: 3px;
+      margin-bottom: 12px;
+      gap: 3px;
+    }
+    .seg-btn {
+      border: none;
+      background: transparent;
+      padding: 6px 8px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+    }
+    .seg-btn.active {
+      background: #ffffff;
+      color: var(--emerald-deep);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+    }
+
+    .wallet-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 540px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .wallet-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: all 0.22s var(--ease);
+    }
+    .wallet-item:hover {
+      background: #f1f5f9;
+      transform: translateX(2px);
+    }
+    .wallet-item.active {
+      background: var(--emerald-grad);
+      border-color: transparent;
+      color: #ffffff;
+      box-shadow: var(--shadow-emerald);
+      transform: translateY(-1px);
+    }
+    .wallet-item.active .wi-sub { color: rgba(255,255,255,0.85); }
+    .wallet-item.active .wi-icon {
+      background: rgba(255,255,255,0.2);
+      color: #ffffff;
+    }
+
+    .wi-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .wi-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: #ffffff;
+      color: var(--emerald-deep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.05);
+    }
+    .wi-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wi-sub { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Center Column Top Hero (Chart + Composer) */
+    .hero-top-card {
+      margin-bottom: 18px;
+    }
+    .hero-split {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 18px;
+      align-items: center;
+    }
+    @media (max-width: 680px) { .hero-split { grid-template-columns: 1fr; } }
+
+    .hero-metric-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .hero-balance {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hero-coin-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.28);
+    }
+    .hero-val-big {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #d97706;
+    }
+    .hero-val-sub {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--emerald-deep);
+    }
+    .hero-actions-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 120px;
+      width: 100%;
+    }
+
+    /* Composer Area */
+    .composer-panel {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-hairline);
+    }
+    .sample-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .chip-btn {
+      border: 1px solid var(--border-soft);
+      background: #f8fafc;
+      color: var(--text-secondary);
+      border-radius: 99px;
+      padding: 5px 11px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+    }
+    .chip-btn:hover {
+      background: #ecfdf5;
+      border-color: var(--emerald-light);
+      color: var(--emerald-deep);
+    }
+
+    textarea, input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 13px;
+      background: #fbfcfd;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s var(--ease);
+    }
+    textarea { min-height: 126px; resize: vertical; line-height: 1.55; }
+    textarea:focus, input:focus, select:focus {
+      background: #fff;
+      border-color: var(--emerald-light);
+      box-shadow: 0 0 0 3px rgba(55, 207, 148, 0.16);
+    }
+
+    /* Center Bottom: Evaluation & Draft Cards (like Pending/Completed list) */
+    .section-subtitle {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 14px 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .tx-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      margin-bottom: 8px;
+      transition: all 0.2s var(--ease);
+    }
+    .tx-row:hover { background: #f1f5f9; }
+    .tx-row.highlight-emerald {
+      background: var(--emerald-grad);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: var(--shadow-emerald);
+    }
+    .tx-row.highlight-emerald .tx-sub { color: rgba(255,255,255,0.88); }
+    .tx-row.highlight-emerald .tx-icon { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .tx-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .tx-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--emerald-deep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.04);
+    }
+    .tx-title { font-size: 13px; font-weight: 600; }
+    .tx-sub { font-size: 11px; color: var(--text-muted); }
+    .tx-right { text-align: right; flex-shrink: 0; }
+    .tx-amount { font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    /* Status Pill Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-emerald { background: #dcfce7; color: #166534; }
+    .badge-amber { background: var(--amber-bg); color: #92400e; }
+    .badge-rose { background: var(--rose-bg); color: #9f1239; }
+    .badge-blue { background: var(--blue-bg); color: #075985; }
+    .badge-slate { background: #e2e8f0; color: #334155; }
+
+    /* Right Column: Buy Details & Vertical Node Stepper */
+    .detail-kv {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-hairline);
+      margin-bottom: 16px;
+    }
+    .kv-item .kv-label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+    .kv-item .kv-val { font-size: 13px; font-weight: 600; color: var(--text-primary); word-break: break-word; }
+    .kv-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--blue) !important; font-size: 12px !important; }
+
+    /* Vertical Stepper matching reference bottom-right */
+    .v-stepper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding-left: 26px;
+    }
+    .v-stepper::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: #e2e8f0;
+    }
+    .v-step {
+      position: relative;
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: color 0.2s var(--ease);
+    }
+    .v-step::before {
+      content: "";
+      position: absolute;
+      left: -25px;
+      top: 3px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #cbd5e1;
+      transition: all 0.25s var(--ease);
+    }
+    .v-step.done { color: var(--text-primary); font-weight: 500; }
+    .v-step.done::before { border-color: #10b981; background: #ecfdf5; box-shadow: 0 0 0 3px rgba(16,185,129,0.16); }
+    .v-step.warn { color: var(--amber); font-weight: 600; }
+    .v-step.warn::before { border-color: #f59e0b; background: #fef3c7; box-shadow: 0 0 0 3px rgba(245,158,11,0.2); }
+    .v-step.danger { color: var(--rose); font-weight: 600; }
+    .v-step.danger::before { border-color: #e11d48; background: #ffe4e6; box-shadow: 0 0 0 3px rgba(225,29,72,0.18); }
+    .v-step .vs-time { font-size: 10px; color: var(--text-muted); display: block; margin-top: 1px; }
+
+    /* Email Draft Box */
+    .email-box {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 12.5px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      max-height: 290px;
+      overflow-y: auto;
+      color: #1e293b;
+    }
+
+    /* Tables in Pipeline & Master Data */
+    .table-modern { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-size: 13px; }
+    .table-modern th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      padding: 6px 12px;
+    }
+    .table-modern td {
+      background: #f8fafc;
+      padding: 12px;
+      border-top: 1px solid #f1f5f9;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .table-modern td:first-child { border-left: 1px solid #f1f5f9; border-radius: 10px 0 0 10px; }
+    .table-modern td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 10px 10px 0; }
+    .table-modern tr:hover td { background: #f1f5f9; }
+
+    /* Shimmer & Spinner */
+    .spinner {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast Notification */
+    .toast-stack {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      background: #0f172a;
+      color: #fff;
+      padding: 11px 16px;
+      border-radius: 11px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: slideToast 0.28s var(--ease);
+      border-left: 4px solid #10b981;
+    }
+    .toast.warn { border-left-color: #f59e0b; }
+    .toast.err { border-left-color: #e11d48; }
+    @keyframes slideToast {
+      from { opacity: 0; transform: translateY(14px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- SLIM LEFT ICON SIDEBAR -->
+  <aside class="sidebar-rail">
+    <div class="brand-mark" title="Minh An B2B Tech" onclick="switchView('workspace')">MA</div>
+
+    <div class="rail-group-label">Pages</div>
+    <button class="rail-btn active" id="nav-workspace" data-tip="Xử lý Cơ hội AI" onclick="switchView('workspace')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 10h10M7 14h6"/></svg>
+    </button>
+    <button class="rail-btn" id="nav-manager" data-tip="Trưởng phòng Duyệt" onclick="switchView('manager')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+      <span class="rail-badge hidden" id="rail-mgr-badge">0</span>
+    </button>
+    <button class="rail-btn" id="nav-pipeline" data-tip="Theo dõi Pipeline" onclick="switchView('pipeline')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+    </button>
+
+    <div class="rail-group-label">Data</div>
+    <button class="rail-btn" id="nav-master" data-tip="Bảng giá & Tồn kho" onclick="switchView('master')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    </button>
+    <button class="rail-btn" id="nav-reps" data-tip="Cân bằng tải 6 NVKD" onclick="switchView('reps')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-area">
+    <header class="topbar">
+      <div class="search-global">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="global-search" placeholder="Tìm nhanh mã cơ hội, khách hàng, SKU..." oninput="onSearchFilter()">
+      </div>
+
+      <div class="topbar-right">
+        <div class="pill-status" id="ai-pill">
+          <span class="pill-dot"></span>
+          <span id="ai-pill-text">Gemini AI Ready</span>
+        </div>
+        <span class="badge badge-blue" id="top-pricelist">PL-2026-Q4</span>
+        <button class="icon-action" title="Hàng đợi Trưởng phòng duyệt" onclick="switchView('manager')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="rail-badge hidden" id="top-mgr-badge">0</span>
+        </button>
+        <button class="icon-action" title="Làm mới dữ liệu Demo" onclick="resetDemo()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+        <div class="user-chip">
+          <div class="user-avatar">MA</div>
+          <div class="user-meta">
+            <div class="u-name">Minh An Sales AI</div>
+            <div class="u-role">B2B Operations Hub</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="workspace-body">
+      <div class="page-header">
+        <h1 class="page-title" id="page-title">Xử lý Cơ hội B2B</h1>
+        <div class="header-kpis">
+          <div class="mini-kpi"><span>Tổng:</span><strong id="kpi-total">0</strong></div>
+          <div class="mini-kpi"><span style="color:var(--amber)">Làm rõ:</span><strong id="kpi-need-info" style="color:var(--amber)">0</strong></div>
+          <div class="mini-kpi"><span style="color:var(--rose)">Chờ duyệt:</span><strong id="kpi-waiting-mgr" style="color:var(--rose)">0</strong></div>
+          <div class="mini-kpi"><span style="color:var(--emerald-deep)">Sẵn sàng:</span><strong id="kpi-ready" style="color:var(--emerald-deep)">0</strong></div>
+        </div>
+      </div>
+
+      <!-- ==================== VIEW 1: WORKSPACE (3-COLUMN BENTO) ==================== -->
+      <section id="view-workspace" class="view-panel active">
+        <div class="bento-3col">
+          <!-- LEFT COLUMN: OPPORTUNITY / REP LIST -->
+          <div class="card">
+            <div class="left-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="left-search-input" placeholder="Lọc cơ hội / NVKD..." oninput="onSearchFilter()">
+            </div>
+
+            <div class="seg-tabs">
+              <button class="seg-btn active" id="seg-opps" onclick="switchLeftList('opps')">Cơ hội (<span id="count-opps-tab">0</span>)</button>
+              <button class="seg-btn" id="seg-reps" onclick="switchLeftList('reps')">6 NVKD</button>
+            </div>
+
+            <div class="wallet-list" id="left-wallet-list"></div>
+          </div>
+
+          <!-- CENTER COLUMN: OVERVIEW CHART + COMPOSER + EVALUATION -->
+          <div>
+            <!-- Top Center Card: Metric + Area Chart + Collapsible Intake Composer -->
+            <div class="card hero-top-card">
+              <div class="hero-split">
+                <div class="hero-metric-box">
+                  <div class="hero-balance">
+                    <div class="hero-coin-icon">₫</div>
+                    <div>
+                      <div class="hero-val-big" id="hero-total-value">0 đ</div>
+                      <div class="hero-val-sub" id="hero-sub-label">Chưa chọn cơ hội</div>
+                    </div>
+                  </div>
+                  <div class="hero-actions-stack">
+                    <button class="btn-emerald" onclick="toggleComposer(true)">+ Tiếp nhận Yêu cầu Mới</button>
+                    <button class="btn-mint" onclick="switchView('pipeline')">Xem toàn bộ Pipeline</button>
+                  </div>
+                </div>
+
+                <!-- Smooth Emerald Area Chart (SVG) -->
+                <div class="chart-wrap" id="hero-chart-wrap">
+                  <svg viewBox="0 0 420 110" width="100%" height="100%" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="emeraldArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#16a36c" stop-opacity="0.45"/>
+                        <stop offset="100%" stop-color="#37cf94" stop-opacity="0.02"/>
+                      </linearGradient>
+                    </defs>
+                    <path id="chart-area-path" d="M0,95 L60,82 L120,88 L180,68 L240,74 L300,48 L360,55 L420,24 L420,110 L0,110 Z" fill="url(#emeraldArea)"/>
+                    <path id="chart-line-path" d="M0,95 L60,82 L120,88 L180,68 L240,74 L300,48 L360,55 L420,24" fill="none" stroke="#16a36c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Intake Composer -->
+              <div class="composer-panel" id="composer-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; flex-wrap:wrap;">
+                  <strong style="font-size:13px;">📨 Nhập Yêu cầu từ Email / Biểu mẫu</strong>
+                  <select id="channel-select" style="width:auto; padding:5px 10px; font-size:12px;">
+                    <option value="Email">Kênh: Email</option>
+                    <option value="Web Form">Kênh: Biểu mẫu Web</option>
+                  </select>
+                </div>
+
+                <div class="sample-chips">
+                  <button class="chip-btn" onclick="loadSample('standard')">🟢 Đơn chuẩn</button>
+                  <button class="chip-btn" onclick="loadSample('missing')">🟡 Thiếu thông tin</button>
+                  <button class="chip-btn" onclick="loadSample('discount_alert')">🔴 Vượt thẩm quyền & Hết kho</button>
+                  <button class="chip-btn" onclick="loadSample('natural_unmatched')">🟠 Hạng mục ngoài danh mục</button>
+                </div>
+
+                <textarea id="email-input" placeholder="Dán nội dung email hoặc yêu cầu của khách hàng vào đây..."></textarea>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+                  <button class="btn-ghost" onclick="toggleComposer(false)" id="btn-hide-composer" style="display:none;">Thu gọn</button>
+                  <button class="btn-emerald" id="submit-btn" onclick="submitPipeline()">
+                    <span>Phân tích & Chạy AI Agent</span> ➔
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Center Card: Selected Opportunity Breakdown & Draft -->
+            <div class="card" id="center-result-card">
+              <div id="center-empty" style="text-align:center; padding:34px 16px; color:var(--text-muted);">
+                <div style="font-size:32px; margin-bottom:6px;">⚡</div>
+                <div style="font-size:14px; font-weight:600; color:var(--text-secondary);">Chưa có hồ sơ được chọn</div>
+                <div style="font-size:12px; margin-top:3px;">Chọn một kịch bản mẫu ở trên rồi nhấn <strong>Phân tích & Chạy AI Agent</strong> để xem kết quả thẩm định.</div>
+              </div>
+
+              <div id="center-detail-content" style="display:none;">
+                <!-- Clarification Loop (if NEED_MORE_INFO) -->
+                <div id="clarify-box" style="display:none; background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:14px; margin-bottom:14px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px; flex-wrap:wrap;">
+                    <strong style="font-size:13px; color:#92400e;">🔁 Thiếu thông tin — Khách hàng bổ sung để tiếp tục quy trình</strong>
+                    <button class="btn-ghost" style="padding:4px 10px; font-size:11px;" onclick="fillClarifySample()">Điền phản hồi mẫu</button>
+                  </div>
+                  <div id="missing-list-pills" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
+                  <textarea id="clarify-input" style="min-height:74px; margin-bottom:8px;" placeholder="Nhập phản hồi bổ sung của khách hàng..."></textarea>
+                  <button class="btn-emerald" id="clarify-btn" style="background:linear-gradient(135deg,#d97706,#f59e0b);" onclick="submitClarify()">
+                    Cập nhật bổ sung & Chạy lại kiểm tra ➔
+                  </button>
+                </div>
+
+                <!-- Approval Alerts (if WAITING_MANAGER_APPROVAL) -->
+                <div id="approval-alert-box" style="display:none; background:#fff1f2; border:1px solid #fecdd3; border-radius:12px; padding:14px; margin-bottom:14px;">
+                  <strong style="font-size:13px; color:#9f1239; display:block; margin-bottom:6px;">⛔ Vượt thẩm quyền NVKD — Cần Trưởng phòng Kinh doanh duyệt</strong>
+                  <ul id="approval-reasons-ul" style="margin-left:18px; font-size:12px; color:#be123c;"></ul>
+                </div>
+
+                <!-- Evaluated Items (Styled like Pending/Completed cards) -->
+                <div id="items-section">
+                  <div class="section-subtitle">
+                    <span>Thẩm định Hạng mục & Tồn kho</span>
+                    <span class="badge badge-blue" id="price-ver-badge">PL-2026-Q4</span>
+                  </div>
+                  <div id="evaluated-items-list"></div>
+                </div>
+
+                <!-- Unmatched Items Alert -->
+                <div id="unmatched-section" style="display:none; background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:12px; margin-top:10px;">
+                  <strong style="font-size:12px; color:#9a3412;">⚠️ Hạng mục ngoài danh mục (Chưa có trong bảng giá — Vận hành bổ sung):</strong>
+                  <div id="unmatched-list" style="margin-top:6px; font-size:12px; color:#7c2d12;"></div>
+                </div>
+
+                <!-- Email Draft -->
+                <div class="section-subtitle" style="margin-top:18px;">
+                  <span>✉️ Bản nháp Phản hồi Khách hàng (AI Soạn thảo)</span>
+                  <button class="btn-ghost" style="padding:5px 10px;" onclick="copyEmailDraft()">📋 Sao chép</button>
+                </div>
+                <div class="email-box" id="email-draft-content"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: BUY DETAILS & VERTICAL WORKFLOW TIMELINE -->
+          <div class="card right-detail-col">
+            <div class="card-title">
+              <span>Chi tiết Hồ sơ</span>
+              <span class="badge badge-slate" id="detail-ai-badge">--</span>
+            </div>
+
+            <div id="right-empty" style="font-size:12px; color:var(--text-muted); padding:20px 0;">
+              Chọn hoặc xử lý một yêu cầu để xem chi tiết thông số cơ hội và tiến trình xử lý theo thời gian thực.
+            </div>
+
+            <div id="right-detail-content" style="display:none;">
+              <div class="detail-kv">
+                <div class="kv-item">
+                  <div class="kv-label">Mã Cơ hội (Opportunity ID)</div>
+                  <div class="kv-val kv-mono" id="d-opp-id">--</div>
+                </div>
+                <div class="kv-item">
+                  <div class="kv-label">Trạng thái Quy trình</div>
+                  <div class="kv-val" id="d-status">--</div>
+                </div>
+                <div class="kv-item">
+                  <div class="kv-label">Khách hàng & Người phê duyệt</div>
+                  <div class="kv-val" id="d-customer">--</div>
+                </div>
+                <div class="kv-item">
+                  <div class="kv-label">NVKD Phụ trách</div>
+                  <div class="kv-val" id="d-rep">--</div>
+                </div>
+                <div class="kv-item">
+                  <div class="kv-label">Ngân sách KH vs Tổng Đề xuất</div>
+                  <div class="kv-val" id="d-budget">--</div>
+                </div>
+                <div class="kv-item">
+                  <div class="kv-label">Chiết khấu & Thời gian Vận hành</div>
+                  <div class="kv-val" id="d-terms">--</div>
+                </div>
+                <div class="kv-item">
+                  <div class="kv-label">Theo dõi Tiếp theo (Pipeline Stage)</div>
+                  <select id="d-tracking-select" style="padding:6px 10px; font-size:12px; margin-top:4px;" onchange="updateTrackingFromDetail(this.value)">
+                    <option value="Chờ KH bổ sung thông tin">Chờ KH bổ sung thông tin</option>
+                    <option value="Chờ Trưởng phòng duyệt">Chờ Trưởng phòng duyệt</option>
+                    <option value="Đã duyệt - Sẵn sàng gửi">Đã duyệt - Sẵn sàng gửi</option>
+                    <option value="Đã gửi báo giá cho KH">Đã gửi báo giá cho KH</option>
+                    <option value="Đang đàm phán">Đang đàm phán</option>
+                    <option value="Chốt đơn (Won)">Chốt đơn (Won)</option>
+                    <option value="Thất bại (Lost)">Thất bại (Lost)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Quick Manager Approve Box inside Right Details -->
+              <div id="right-manager-quick" style="display:none; background:#fff1f2; border:1px solid #fecdd3; border-radius:12px; padding:12px; margin-bottom:16px;">
+                <div style="font-size:12px; font-weight:700; color:#9f1239; margin-bottom:8px;">👔 Phê duyệt nhanh (Trưởng phòng)</div>
+                <input type="number" step="0.5" id="q-mgr-disc" placeholder="% Chiết khấu duyệt" style="margin-bottom:6px; font-size:12px; padding:6px 10px;">
+                <input type="text" id="q-mgr-note" placeholder="Ghi chú duyệt..." style="margin-bottom:8px; font-size:12px; padding:6px 10px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                  <button class="btn-emerald" style="padding:7px; font-size:12px;" onclick="quickDecideManager('APPROVE')">Duyệt</button>
+                  <button class="btn-rose" style="padding:7px; font-size:12px;" onclick="quickDecideManager('REJECT')">Từ chối</button>
+                </div>
+              </div>
+
+              <!-- Vertical Node Stepper matching reference image -->
+              <div class="v-stepper" id="v-stepper"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== VIEW 2: MANAGER QUEUE ==================== -->
+      <section id="view-manager" class="view-panel">
+        <div class="card">
+          <div class="card-title">
+            <span>👔 Hàng đợi Trưởng phòng Kinh doanh Duyệt</span>
+            <span class="badge badge-rose" id="mgr-view-count">0 hồ sơ</span>
+          </div>
+          <div id="manager-queue-list"></div>
+        </div>
+      </section>
+
+      <!-- ==================== VIEW 3: PIPELINE TRACKING ==================== -->
+      <section id="view-pipeline" class="view-panel">
+        <div class="card">
+          <div class="card-title">
+            <span>📊 Bảng Theo dõi Toàn bộ Cơ hội (Không bỏ sót theo dõi)</span>
+            <button class="btn-emerald" style="padding:7px 12px; font-size:12px;" onclick="switchView('workspace'); toggleComposer(true);">+ Thêm Yêu cầu</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="table-modern">
+              <thead>
+                <tr>
+                  <th>Mã Cơ hội</th>
+                  <th>Khách hàng / Kênh</th>
+                  <th>NVKD Phụ trách</th>
+                  <th>Tổng đề xuất</th>
+                  <th>Trạng thái</th>
+                  <th>Theo dõi Tiếp theo</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="pipeline-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== VIEW 4: MASTER DATA & STOCK ==================== -->
+      <section id="view-master" class="view-panel">
+        <div class="card" style="margin-bottom:18px;">
+          <div class="card-title">
+            <span>📦 Bảng giá Hiện hành & Tồn kho Khả dụng</span>
+            <span class="badge badge-emerald" id="master-version-badge">PL-2026-Q4</span>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="table-modern">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Sản phẩm / Dịch vụ</th>
+                  <th>Nhóm</th>
+                  <th>Đơn giá hiện hành</th>
+                  <th>Lead Time (Chuẩn / Nhập)</th>
+                  <th>Tồn khả dụng</th>
+                </tr>
+              </thead>
+              <tbody id="master-products-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span>📜 Chính sách Chiết khấu & Thẩm quyền</span></div>
+          <div id="policy-details" style="font-size:13px; color:var(--text-secondary); line-height:1.7;"></div>
+        </div>
+      </section>
+
+      <!-- ==================== VIEW 5: 6 SALES REPS WORKLOAD ==================== -->
+      <section id="view-reps" class="view-panel">
+        <div class="card">
+          <div class="card-title"><span>👥 Phân bổ Cân bằng tải 6 Nhân viên Kinh doanh</span></div>
+          <div id="reps-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px;"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<script>
+  let allOpportunities = [];
+  let allReps = [];
+  let currentOpp = null;
+  let leftMode = 'opps';
+
+  const sampleRequests = {
+    standard: `Chào bộ phận kinh doanh Minh An,
+Tôi là Lê Hoàng Nam - Giám đốc Hạ tầng (Người phê duyệt ngân sách), đại diện Công ty Cổ phần Công nghệ DigiTech.
+Email liên hệ: nam.le@digitech.vn, SĐT: 0918234567.
+Công ty tôi cần đầu tư hạ tầng cho chi nhánh mới gồm:
+- 02 Máy chủ Dell PowerEdge R750
+- 01 Switch Cisco Catalyst C9200L 24P PoE+
+- 01 Dịch vụ lắp đặt và cấu hình Server tại chỗ
+Tổng ngân sách dự kiến khoảng 300 triệu đồng.
+Yêu cầu hoàn thành giao hàng và lắp đặt trong thời hạn 5 ngày làm việc.
+Nhờ các bạn áp dụng mức chiết khấu thông thường 5% cho đơn hàng này nhé.`,
+
+    missing: `Xin chào Minh An,
+Bên công ty Việt Tiến Corp muốn hỏi báo giá cho 1 thiết bị tường lửa FortiGate 60F và 1 máy chủ Dell R750.
+Có gì gửi qua email procurement@viettiencorp.com giúp bên mình nhé.`,
+
+    discount_alert: `Gửi Phòng Kinh doanh Minh An,
+Tôi là Nguyễn Quốc Tuấn - Trưởng phòng IT Công ty Tài chính An Thịnh (Email: tuan.nq@anthinh.com, SĐT: 0988776655).
+Phê duyệt chi phí dự kiến bởi Phó Tổng Giám đốc Trần Minh Khôi.
+Chúng tôi cần đặt gấp cấu hình sau:
+- 01 Máy chủ Dell PowerEdge R750
+- 02 Thiết bị tường lửa Fortinet FortiGate 60F
+- 01 Gói bảo trì hệ thống định kỳ 1 năm
+Do là đối tác chiến lược, chúng tôi đề nghị mức chiết khấu đặc biệt 15% trên toàn bộ đơn hàng.
+Ngân sách phê duyệt là 160 triệu. Yêu cầu giao hàng gấp trong vòng 4 ngày làm việc.`,
+
+    natural_unmatched: `Chào team sales Minh An, mình là Lan ở Công ty Logistics Sao Mai (lan.pt@saomailogistics.vn - 0903456789).
+Tuần sau bên mình setup phòng server mới, cần gấp trong 7 ngày:
+- 2 con máy chủ Dell R750 kèm dịch vụ cài đặt máy chủ tận nơi
+- 2 bộ switch Cisco 24 port C9200L
+- Ngoài ra mua kèm giúp mình 5 màn hình Dell UltraSharp 27 inch cho phòng kỹ thuật luôn nhé.
+Ngân sách tổng sếp duyệt tầm 350 củ, không cần chiết khấu thêm cũng được, miễn đủ hàng kịp tiến độ.`
+  };
+
+  function toast(msg, type = 'ok') {
+    const stack = document.getElementById('toast-stack');
+    const el = document.createElement('div');
+    el.className = 'toast' + (type === 'warn' ? ' warn' : (type === 'err' ? ' err' : ''));
+    el.innerText = msg;
+    stack.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; setTimeout(() => el.remove(), 220); }, 3200);
+  }
+
+  function formatMoney(num) {
+    if (num === null || num === undefined) return 'Chưa rõ';
+    return Math.round(num).toLocaleString('vi-VN') + ' đ';
+  }
+
+  function statusBadge(status) {
+    const map = {
+      'NEED_MORE_INFO': ['Chờ KH làm rõ', 'badge-amber'],
+      'WAITING_MANAGER_APPROVAL': ['Chờ Trưởng phòng duyệt', 'badge-rose'],
+      'READY_TO_SEND': ['Sẵn sàng gửi KH', 'badge-emerald'],
+      'APPROVED_TO_SEND': ['Trưởng phòng đã duyệt', 'badge-emerald'],
+      'REVISION_REQUIRED': ['Cần điều chỉnh', 'badge-amber']
+    };
+    const [label, cls] = map[status] || [status, 'badge-slate'];
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+
+  function switchView(name) {
+    const titles = {
+      workspace: 'Xử lý Cơ hội B2B',
+      manager: 'Trưởng phòng Phê duyệt',
+      pipeline: 'Theo dõi Pipeline Cơ hội',
+      master: 'Bảng giá & Tồn kho',
+      reps: 'Phân bổ 6 Nhân viên Kinh doanh'
+    };
+    document.getElementById('page-title').innerText = titles[name] || 'Minh An AI Agent';
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
+    const navBtn = document.getElementById('nav-' + name);
+    if (navBtn) navBtn.classList.add('active');
+  }
+
+  function switchLeftList(mode) {
+    leftMode = mode;
+    document.getElementById('seg-opps').classList.toggle('active', mode === 'opps');
+    document.getElementById('seg-reps').classList.toggle('active', mode === 'reps');
+    renderLeftWalletList();
+  }
+
+  function toggleComposer(show) {
+    const panel = document.getElementById('composer-panel');
+    panel.style.display = show ? 'block' : 'none';
+    document.getElementById('btn-hide-composer').style.display = (show && currentOpp) ? 'inline-flex' : 'none';
+  }
+
+  function loadSample(key) {
+    toggleComposer(true);
+    document.getElementById('email-input').value = sampleRequests[key];
+    toast('Đã tải mẫu yêu cầu: ' + key);
+  }
+
+  function fillClarifySample() {
+    document.getElementById('clarify-input').value =
+      'Chào bạn, tôi là Anh Hùng - Trưởng phòng Mua hàng (SĐT: 0909888777), người phê duyệt là Giám đốc Lê Minh. ' +
+      'Ngân sách tổng bên mình tối đa 160 triệu, mong muốn triển khai trong thời hạn 12 ngày làm việc.';
+  }
+
+  function onSearchFilter() {
+    renderLeftWalletList();
+    renderPipelineTable();
+  }
+
+  function getSearchTerm() {
+    const g = (document.getElementById('global-search').value || '').trim().toLowerCase();
+    const l = (document.getElementById('left-search-input').value || '').trim().toLowerCase();
+    return l || g;
+  }
+
+  async function refreshAll() {
+    await Promise.all([fetchStatus(), fetchReps(), fetchOpportunities(), fetchMaster()]);
+  }
+
+  async function fetchStatus() {
+    const res = await fetch('/api/status');
+    const s = await res.json();
+    document.getElementById('kpi-total').innerText = s.total;
+    document.getElementById('kpi-need-info').innerText = s.need_info;
+    document.getElementById('kpi-waiting-mgr').innerText = s.waiting_manager;
+    document.getElementById('kpi-ready').innerText = s.ready;
+    document.getElementById('top-pricelist').innerText = `${s.price_list_version} (${s.price_effective_date})`;
+
+    ['rail-mgr-badge', 'top-mgr-badge'].forEach(id => {
+      const el = document.getElementById(id);
+      el.innerText = s.waiting_manager;
+      el.classList.toggle('hidden', s.waiting_manager === 0);
+    });
+
+    document.getElementById('ai-pill-text').innerText = s.ai_configured ? 'Gemini AI Active' : 'Regex Fallback Mode';
+  }
+
+  async function fetchReps() {
+    const res = await fetch('/api/reps');
+    allReps = await res.json();
+    renderLeftWalletList();
+    renderRepsView();
+  }
+
+  async function fetchOpportunities() {
+    const res = await fetch('/api/opportunities');
+    allOpportunities = await res.json();
+    document.getElementById('count-opps-tab').innerText = allOpportunities.length;
+    if (currentOpp) {
+      const refreshed = allOpportunities.find(o => o.opportunity_id === currentOpp.opportunity_id);
+      if (refreshed) currentOpp = refreshed;
+    }
+    renderLeftWalletList();
+    renderManagerQueue();
+    renderPipelineTable();
+    updateHeroChart();
+  }
+
+  async function fetchMaster() {
+    const res = await fetch('/api/products');
+    const data = await res.json();
+    document.getElementById('master-version-badge').innerText = `${data.price_list_version} • Hiệu lực ${data.price_effective_date}`;
+    document.getElementById('master-products-tbody').innerHTML = data.products.map(p => `
+      <tr>
+        <td><code>${p.sku}</code></td>
+        <td><strong>${p.name}</strong></td>
+        <td><span class="badge badge-slate">${p.category}</span></td>
+        <td><strong>${formatMoney(p.unit_price)}</strong></td>
+        <td>Chuẩn: ${p.standard_lead_time_days}d / Nhập: ${p.backorder_lead_time_days}d</td>
+        <td>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <input type="number" id="stock-${p.sku}" value="${p.available_stock}" style="width:78px; padding:5px 8px;">
+            <button class="btn-ghost" onclick="updateStock('${p.sku}')">Lưu</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    const pol = data.discount_policy;
+    document.getElementById('policy-details').innerHTML = `
+      <p>• <strong>Hạn mức NVKD tự duyệt:</strong> Tối đa <strong>${pol.standard_rep_limit_pct}%</strong>.</p>
+      <p>• <strong>Khung chiết khấu theo bậc doanh số:</strong> ${pol.volume_tiers.map(t => `Từ ${formatMoney(t.min_total_vnd)} (max ${t.max_discount_pct}%)`).join(' • ')}.</p>
+      <p>• <strong>Điều kiện chuyển ${pol.manager_name}:</strong> Chiết khấu vượt khung/vượt 8%, thời hạn ngắn hơn lead time Vận hành, thiếu tồn kho, có hạng mục ngoài danh mục hoặc vượt ngân sách >10%.</p>
+    `;
+  }
+
+  function renderLeftWalletList() {
+    const container = document.getElementById('left-wallet-list');
+    const q = getSearchTerm();
+
+    if (leftMode === 'reps') {
+      const list = allReps.filter(r => !q || r.name.toLowerCase().includes(q) || r.id.toLowerCase().includes(q));
+      container.innerHTML = list.map(r => `
+        <div class="wallet-item">
+          <div class="wi-left">
+            <div class="wi-icon">${r.name.split(' ').slice(-1)[0][0]}</div>
+            <div style="min-width:0;">
+              <div class="wi-title">${r.name}</div>
+              <div class="wi-sub">${r.id} • ${r.email}</div>
+            </div>
+          </div>
+          <span class="badge ${r.assigned_count >= 6 ? 'badge-amber' : 'badge-emerald'}">${r.assigned_count} đơn</span>
+        </div>
+      `).join('');
+      return;
+    }
+
+    const filtered = allOpportunities.slice().reverse().filter(o => {
+      if (!q) return true;
+      const p = o.parsed_data || {};
+      return o.opportunity_id.toLowerCase().includes(q) ||
+             (p.company_name || '').toLowerCase().includes(q) ||
+             (p.customer_name || '').toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:26px 10px; font-size:12px; color:var(--text-muted);">Chưa có hồ sơ cơ hội nào.</div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(o => {
+      const p = o.parsed_data || {};
+      const active = currentOpp && currentOpp.opportunity_id === o.opportunity_id;
+      const title = p.company_name || p.customer_name || 'Khách hàng B2B';
+      const valText = o.financials ? formatMoney(o.financials.final_total) : 'Chờ làm rõ';
+      const iconChar = o.status === 'WAITING_MANAGER_APPROVAL' ? '!' : (o.status === 'NEED_MORE_INFO' ? '?' : '✓');
+      return `
+        <div class="wallet-item ${active ? 'active' : ''}" onclick="selectOpp('${o.opportunity_id}')">
+          <div class="wi-left">
+            <div class="wi-icon">${iconChar}</div>
+            <div style="min-width:0;">
+              <div class="wi-title">${title}</div>
+              <div class="wi-sub">${o.opportunity_id} • ${valText}</div>
+            </div>
+          </div>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.65; flex-shrink:0;"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function updateHeroChart() {
+    const vals = allOpportunities.filter(o => o.financials).map(o => o.financials.final_total);
+    if (vals.length >= 2) {
+      const maxV = Math.max(...vals, 1);
+      const pts = vals.map((v, i) => {
+        const x = Math.round((i / (vals.length - 1)) * 420);
+        const y = Math.round(98 - (v / maxV) * 76);
+        return `${x},${y}`;
+      });
+      const lineD = 'M' + pts.join(' L');
+      const areaD = lineD + ' L420,110 L0,110 Z';
+      document.getElementById('chart-line-path').setAttribute('d', lineD);
+      document.getElementById('chart-area-path').setAttribute('d', areaD);
+    }
+
+    if (currentOpp && currentOpp.financials) {
+      document.getElementById('hero-total-value').innerText = formatMoney(currentOpp.financials.final_total);
+      document.getElementById('hero-sub-label').innerText = `${currentOpp.opportunity_id} • CK ${currentOpp.financials.applied_discount_pct}%`;
+    } else if (currentOpp) {
+      document.getElementById('hero-total-value').innerText = 'Chờ bổ sung';
+      document.getElementById('hero-sub-label').innerText = currentOpp.opportunity_id;
+    } else {
+      const sum = vals.reduce((a, b) => a + b, 0);
+      document.getElementById('hero-total-value').innerText = formatMoney(sum);
+      document.getElementById('hero-sub-label').innerText = `Tổng giá trị ${allOpportunities.length} cơ hội`;
+    }
+  }
+
+  function selectOpp(oppId) {
+    const opp = allOpportunities.find(o => o.opportunity_id === oppId);
+    if (!opp) return;
+    renderOpportunity(opp);
+    switchView('workspace');
+  }
+
+  async function submitPipeline() {
+    const text = document.getElementById('email-input').value.trim();
+    const channel = document.getElementById('channel-select').value;
+    if (!text) return toast('Vui lòng nhập nội dung yêu cầu trước!', 'warn');
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> <span>AI đang phân tích & thẩm định...</span>';
+
+    try {
+      const res = await fetch('/api/process', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ text, channel })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      await refreshAll();
+      renderOpportunity(data);
+      toast(`Đã xử lý hồ sơ ${data.opportunity_id}`);
+    } catch (e) {
+      toast('Lỗi: ' + e.message, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Phân tích & Chạy AI Agent</span> ➔';
+    }
+  }
+
+  async function submitClarify() {
+    if (!currentOpp) return;
+    const replyText = document.getElementById('clarify-input').value.trim();
+    if (!replyText) return toast('Vui lòng nhập nội dung bổ sung!', 'warn');
+
+    const btn = document.getElementById('clarify-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> <span>Đang gộp thông tin...</span>';
+
+    try {
+      const res = await fetch('/api/clarify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ opportunity_id: currentOpp.opportunity_id, reply_text: replyText })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      document.getElementById('clarify-input').value = '';
+      await refreshAll();
+      renderOpportunity(data);
+      toast(`Đã cập nhật bổ sung cho ${data.opportunity_id}`);
+    } catch (e) {
+      toast('Lỗi: ' + e.message, 'err');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Cập nhật bổ sung & Chạy lại kiểm tra ➔';
+    }
+  }
+
+  function renderOpportunity(data) {
+    currentOpp = data;
+    renderLeftWalletList();
+    updateHeroChart();
+
+    document.getElementById('center-empty').style.display = 'none';
+    document.getElementById('center-detail-content').style.display = 'block';
+    document.getElementById('right-empty').style.display = 'none';
+    document.getElementById('right-detail-content').style.display = 'block';
+    document.getElementById('btn-hide-composer').style.display = 'inline-flex';
+
+    const p = data.parsed_data || {};
+    const meta = p.ai_meta || {};
+    document.getElementById('detail-ai-badge').innerText = meta.used_ai
+      ? `✨ ${meta.model} (${(meta.latency_ms/1000).toFixed(1)}s)`
+      : '⚙️ Regex Fallback';
+
+    document.getElementById('d-opp-id').innerText = data.opportunity_id;
+    document.getElementById('d-status').innerHTML = statusBadge(data.status);
+    document.getElementById('d-customer').innerText =
+      `${p.customer_name || 'Chưa rõ tên'} — ${p.company_name || 'Chưa rõ Cty'}` +
+      (p.customer_approver ? ` (Duyệt: ${p.customer_approver})` : '');
+    document.getElementById('d-rep').innerText = data.assigned_rep
+      ? `${data.assigned_rep.name} (${data.assigned_rep.email})`
+      : 'Chưa gán (Chờ đủ thông tin)';
+
+    if (data.financials) {
+      const f = data.financials;
+      document.getElementById('d-budget').innerText =
+        `NS: ${formatMoney(f.customer_budget)} • Đề xuất: ${formatMoney(f.final_total)}`;
+      document.getElementById('d-terms').innerText =
+        `CK ${f.applied_discount_pct}% (Khung ${f.tier_max_discount_pct}%) • Giao ${data.delivery.estimated_delivery_days}d (YC: ${data.delivery.requested_deadline_days || '-'}d)`;
+    } else {
+      document.getElementById('d-budget').innerText = formatMoney(p.budget);
+      document.getElementById('d-terms').innerText = `CK yêu cầu: ${p.requested_discount_pct || 0}%`;
+    }
+
+    const trackSel = document.getElementById('d-tracking-select');
+    if (data.tracking_stage) trackSel.value = data.tracking_stage;
+
+    // Clarify Box
+    const clarifyBox = document.getElementById('clarify-box');
+    if (data.status === 'NEED_MORE_INFO') {
+      clarifyBox.style.display = 'block';
+      document.getElementById('missing-list-pills').innerHTML = (data.missing_fields || [])
+        .map(f => `<span class="badge badge-amber">Thiếu: ${f}</span>`).join('');
+    } else {
+      clarifyBox.style.display = 'none';
+    }
+
+    // Approval Alert Box & Quick Manager
+    const appBox = document.getElementById('approval-alert-box');
+    const qMgr = document.getElementById('right-manager-quick');
+    if (data.status === 'WAITING_MANAGER_APPROVAL') {
+      appBox.style.display = 'block';
+      document.getElementById('approval-reasons-ul').innerHTML =
+        (data.approval_info.reasons || []).map(r => `<li>${r}</li>`).join('');
+      qMgr.style.display = 'block';
+      document.getElementById('q-mgr-disc').value = data.financials.requested_discount_pct;
+      document.getElementById('q-mgr-note').value = '';
+    } else {
+      appBox.style.display = 'none';
+      qMgr.style.display = 'none';
+    }
+
+    // Evaluated Items
+    const itemsSec = document.getElementById('items-section');
+    const itemsList = document.getElementById('evaluated-items-list');
+    if (data.items && data.items.length > 0) {
+      itemsSec.style.display = 'block';
+      document.getElementById('price-ver-badge').innerText = data.financials.price_list_version;
+      itemsList.innerHTML = data.items.map((it, idx) => `
+        <div class="tx-row ${idx === 0 ? 'highlight-emerald' : ''}">
+          <div class="tx-left">
+            <div class="tx-icon">${it.in_stock ? '✓' : '!'}</div>
+            <div style="min-width:0;">
+              <div class="tx-title">${it.name} (x${it.quantity})</div>
+              <div class="tx-sub">${it.sku} • ${it.stock_status} • ${it.lead_time_days} ngày</div>
+            </div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount">${formatMoney(it.total_price)}</div>
+            <div class="tx-sub">${formatMoney(it.unit_price)}/đv</div>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      itemsSec.style.display = 'none';
+    }
+
+    // Unmatched items
+    const umSec = document.getElementById('unmatched-section');
+    const um = data.unmatched_items || [];
+    if (um.length > 0) {
+      umSec.style.display = 'block';
+      document.getElementById('unmatched-list').innerHTML = um
+        .map(u => `• <strong>${u.raw_name}</strong> (SL: ${u.quantity}) — ${u.note}`).join('<br>');
+    } else {
+      umSec.style.display = 'none';
+    }
+
+    document.getElementById('email-draft-content').innerText = data.draft_response || '';
+
+    // Vertical Stepper Timeline
+    const logs = data.workflow_logs || [];
+    document.getElementById('v-stepper').innerHTML = logs.map((l, idx) => {
+      let cls = 'done';
+      if (l.step.includes('làm rõ')) cls = 'warn';
+      else if (l.step.includes('Thẩm quyền') && data.status === 'WAITING_MANAGER_APPROVAL') cls = 'danger';
+      return `
+        <div class="v-step ${cls}">
+          <div><strong>${l.step}</strong></div>
+          <div style="color:var(--text-secondary); margin-top:1px;">${l.detail}</div>
+          <span class="vs-time">${l.time}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function quickDecideManager(decision) {
+    if (!currentOpp) return;
+    const disc = document.getElementById('q-mgr-disc').value;
+    const note = document.getElementById('q-mgr-note').value;
+    await decideManager(currentOpp.opportunity_id, decision, disc, note);
+  }
+
+  async function decideManager(oppId, decision, discVal, noteVal) {
+    const disc = discVal !== undefined ? discVal : document.getElementById('mgr-disc-' + oppId).value;
+    const note = noteVal !== undefined ? noteVal : document.getElementById('mgr-note-' + oppId).value;
+    const res = await fetch('/api/approve', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ opportunity_id: oppId, decision, approved_discount_pct: disc, note })
+    });
+    const updated = await res.json();
+    if (updated.error) return toast(updated.error, 'err');
+    await refreshAll();
+    renderOpportunity(updated);
+    toast(`Đã ${decision === 'APPROVE' ? 'PHÊ DUYỆT' : 'YÊU CẦU SỬA'} hồ sơ ${oppId}`);
+  }
+
+  function renderManagerQueue() {
+    const container = document.getElementById('manager-queue-list');
+    const pending = allOpportunities.filter(o => o.status === 'WAITING_MANAGER_APPROVAL');
+    document.getElementById('mgr-view-count').innerText = `${pending.length} hồ sơ chờ`;
+    if (pending.length === 0) {
+      container.innerHTML = `<p style="font-size:13px; color:var(--text-muted); padding:16px 0;">Không có hồ sơ vượt thẩm quyền nào đang chờ duyệt.</p>`;
+      return;
+    }
+
+    container.innerHTML = pending.map(opp => `
+      <div style="border:1px solid #fecdd3; background:#fffafa; border-radius:14px; padding:16px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+          <div>
+            <strong>${opp.opportunity_id}</strong> — ${opp.parsed_data.company_name || opp.parsed_data.customer_name}
+            <span class="badge badge-blue" style="margin-left:6px;">NVKD: ${opp.assigned_rep.name}</span>
+          </div>
+          <strong>Niêm yết: ${formatMoney(opp.financials.subtotal)}</strong>
+        </div>
+        <ul style="margin-left:18px; font-size:12px; color:#9f1239; margin-bottom:12px;">
+          ${opp.approval_info.reasons.map(r => `<li>${r}</li>`).join('')}
+        </ul>
+        <div style="display:grid; grid-template-columns:160px 1fr auto auto; gap:10px; align-items:end;">
+          <div>
+            <label style="font-size:11px; color:var(--text-secondary);">% Chiết khấu duyệt</label>
+            <input type="number" step="0.5" id="mgr-disc-${opp.opportunity_id}" value="${opp.financials.requested_discount_pct}">
+          </div>
+          <div>
+            <label style="font-size:11px; color:var(--text-secondary);">Ghi chú phê duyệt</label>
+            <input type="text" id="mgr-note-${opp.opportunity_id}" placeholder="VD: Đồng ý CK 10%, tách giao 2 đợt...">
+          </div>
+          <button class="btn-emerald" onclick="decideManager('${opp.opportunity_id}', 'APPROVE')">✅ Phê duyệt</button>
+          <button class="btn-rose" onclick="decideManager('${opp.opportunity_id}', 'REJECT')">↩️ Yêu cầu sửa</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderPipelineTable() {
+    const q = getSearchTerm();
+    const tbody = document.getElementById('pipeline-tbody');
+    const filtered = allOpportunities.slice().reverse().filter(o => {
+      if (!q) return true;
+      const p = o.parsed_data || {};
+      return o.opportunity_id.toLowerCase().includes(q) ||
+             (p.company_name || '').toLowerCase().includes(q) ||
+             (p.customer_name || '').toLowerCase().includes(q);
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Không có hồ sơ phù hợp.</td></tr>`;
+      return;
+    }
+
+    const stages = [
+      'Chờ KH bổ sung thông tin',
+      'Chờ Trưởng phòng duyệt',
+      'Đã duyệt - Sẵn sàng gửi',
+      'Đã gửi báo giá cho KH',
+      'Đang đàm phán',
+      'Chốt đơn (Won)',
+      'Thất bại (Lost)'
+    ];
+
+    tbody.innerHTML = filtered.map(opp => {
+      const total = opp.financials ? formatMoney(opp.financials.final_total) : '--';
+      const rep = opp.assigned_rep ? opp.assigned_rep.name : 'Chưa gán';
+      const currentStage = opp.tracking_stage || stages[0];
+      return `
+        <tr>
+          <td><strong>${opp.opportunity_id}</strong><div style="font-size:11px; color:var(--text-muted);">${opp.created_at}</div></td>
+          <td><strong>${opp.parsed_data.company_name || opp.parsed_data.customer_name || 'N/A'}</strong><div style="font-size:11px; color:var(--text-muted);">${opp.channel}</div></td>
+          <td>${rep}</td>
+          <td><strong>${total}</strong></td>
+          <td>${statusBadge(opp.status)}</td>
+          <td>
+            <select style="font-size:12px; padding:5px 8px;" onchange="updateTracking('${opp.opportunity_id}', this.value)">
+              ${stages.map(st => `<option value="${st}" ${st === currentStage ? 'selected' : ''}>${st}</option>`).join('')}
+              ${!stages.includes(currentStage) ? `<option value="${currentStage}" selected>${currentStage}</option>` : ''}
+            </select>
+          </td>
+          <td><button class="btn-ghost" onclick="selectOpp('${opp.opportunity_id}')">Mở chi tiết</button></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderRepsView() {
+    document.getElementById('reps-cards-grid').innerHTML = allReps.map(r => `
+      <div class="card" style="padding:16px; margin:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span class="badge badge-blue">${r.id}</span>
+          <span class="badge ${r.assigned_count >= 6 ? 'badge-amber' : 'badge-emerald'}">${r.assigned_count} cơ hội</span>
+        </div>
+        <strong style="font-size:15px;">${r.name}</strong>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${r.email}</div>
+      </div>
+    `).join('');
+  }
+
+  async function updateTrackingFromDetail(stage) {
+    if (!currentOpp) return;
+    await updateTracking(currentOpp.opportunity_id, stage);
+  }
+
+  async function updateTracking(oppId, stage) {
+    await fetch('/api/track', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ opportunity_id: oppId, tracking_stage: stage })
+    });
+    await refreshAll();
+    if (currentOpp && currentOpp.opportunity_id === oppId) renderOpportunity(currentOpp);
+    toast(`Đã cập nhật theo dõi: ${stage}`);
+  }
+
+  async function updateStock(sku) {
+    const val = document.getElementById('stock-' + sku).value;
+    await fetch('/api/stock', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ sku, available_stock: parseInt(val, 10) })
+    });
+    await fetchMaster();
+    toast(`Đã lưu tồn kho ${sku} = ${val}`);
+  }
+
+  function copyEmailDraft() {
+    navigator.clipboard.writeText(document.getElementById('email-draft-content').innerText);
+    toast('Đã sao chép bản nháp email vào clipboard!');
+  }
+
+  async function resetDemo() {
+    await fetch('/api/reset', { method: 'POST', body: '{}' });
+    currentOpp = null;
+    document.getElementById('center-empty').style.display = 'block';
+    document.getElementById('center-detail-content').style.display = 'none';
+    document.getElementById('right-empty').style.display = 'block';
+    document.getElementById('right-detail-content').style.display = 'none';
+    toggleComposer(true);
+    await refreshAll();
+    toast('Đã đặt lại dữ liệu Demo sạch sẽ!');
+  }
+
+  window.onload = refreshAll;
+</script>
+</body>
+</html>
